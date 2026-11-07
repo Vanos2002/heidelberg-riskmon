@@ -12,7 +12,7 @@ Python standard library only, no packages to install.
 
 ## Running on GitHub Actions (current setup)
 
-Runs every 30 min in the private repo `Vanos2002/heidelberg-riskmon`, independent of the laptop.
+Runs every 15 min in the public repo `Vanos2002/heidelberg-riskmon`, independent of the laptop.
 The App Password is the repo secret `RISKMON_SMTP_PASSWORD`. After each run the bot commits
 `riskmon_state.sqlite3`, so run `git pull` before running locally.
 Manual run / SMTP test: *Actions → Heidelberg Risk Monitor → Run workflow* (tick "test e-mail").
