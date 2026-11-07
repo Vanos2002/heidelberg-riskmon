@@ -2,7 +2,7 @@ name: Heidelberg Risk Monitor
 
 on:
   schedule:
-    - cron: "7,22,37,52 * * * *"   # every 15 min; off the full hour, when GitHub is busiest
+    - cron: "*/5 * * * *"   # every 5 min, the shortest interval GitHub allows
   workflow_dispatch:          # "Run workflow" button for manual runs
     inputs:
       test_email:
