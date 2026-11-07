@@ -1,0 +1,44 @@
+{
+  "email": {
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 465
+  },
+  "state_db": "riskmon_state.sqlite3",
+  "nina": {
+    "enabled": true,
+    "ars": [
+      "082210000000"
+    ],
+    "min_severity": "minor"
+  },
+  "police": {
+    "enabled": true,
+    "feeds": [
+      "https://www.presseportal.de/rss/dienststelle_14915.rss2"
+    ],
+    "location_keywords": [
+      "Heidelberg"
+    ],
+    "escalate_keywords": [
+      "Brand",
+      "Evakuierung",
+      "Gefahr",
+      "Warnung",
+      "Bombe",
+      "Explosion",
+      "Gas",
+      "Fahndung",
+      "Sperrung",
+      "Bedrohung",
+      "Messer",
+      "Schuss"
+    ],
+    "min_severity": "info"
+  },
+  "bsi_wid": {
+    "enabled": true,
+    "feed": "https://wid.cert-bund.de/content/public/securityAdvisory/rss",
+    "min_severity": "severe",
+    "product_keywords": []
+  }
+}

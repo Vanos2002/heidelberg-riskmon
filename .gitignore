@@ -1,0 +1,4 @@
+.env
+logs/
+__pycache__/
+# riskmon_state.sqlite3 IS committed: GitHub Actions needs it to remember seen alerts

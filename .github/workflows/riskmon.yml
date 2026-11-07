@@ -1,0 +1,43 @@
+name: Heidelberg Risk Monitor
+
+on:
+  schedule:
+    - cron: "7,37 * * * *"   # every 30 min (UTC); off the full hour, when GitHub is busiest
+  workflow_dispatch:          # "Run workflow" button for manual runs
+    inputs:
+      test_email:
+        description: "Only send a test e-mail (checks SMTP)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write             # needed to commit the seen-alerts state file
+
+concurrency:
+  group: riskmon
+  cancel-in-progress: false
+
+env:
+  TZ: Europe/Berlin           # log timestamps in Heidelberg time (runners default to UTC)
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check feeds and e-mail new alerts
+        run: python3 -m riskmon ${{ inputs.test_email && '--test-email' || '' }}
+        env:
+          RISKMON_SMTP_PASSWORD: ${{ secrets.RISKMON_SMTP_PASSWORD }}
+          RISKMON_EMAIL: ${{ secrets.RISKMON_EMAIL }}
+
+      - name: Save memory of seen alerts
+        if: always()
+        run: |
+          git config user.name "riskmon-bot"
+          git config user.email "riskmon-bot@users.noreply.github.com"
+          git add riskmon_state.sqlite3
+          git diff --cached --quiet || git commit -m "Update seen-alerts state"
+          git push
