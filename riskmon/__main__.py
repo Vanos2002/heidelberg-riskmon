@@ -94,20 +94,31 @@ def main() -> int:
         log("No new alerts")
         return 0
 
-    msg = notify.build_message(new, email_cfg)
-    if args.dry_run:
-        print(msg.get_body(preferencelist=("plain",)).get_content())
-        log(f"Dry run: {len(new)} new alerts (not sent, not marked as seen)")
-        return 0
-
-    try:
-        notify.send(msg, email_cfg)
-    except Exception as exc:
-        log(f"E-mail FAILED, will retry next run: {exc}")
-        return 1
-    store.mark(new)  # only after a successful send, so nothing is lost
-    log(f"Sent {len(new)} new alerts")
-    return 0
+    # Public-safety alerts go out first, in their own e-mail, so they are never
+    # buried under a pile of cyber-security advisories.
+    groups = [
+        ("public-safety", [a for a in new if notify.is_public_safety(a)], True),
+        ("cyber-security", [a for a in new if not notify.is_public_safety(a)], False),
+    ]
+    status = 0
+    for label, alerts, urgent in groups:
+        if not alerts:
+            continue
+        msg = notify.build_message(alerts, email_cfg, urgent=urgent)
+        if args.dry_run:
+            print(f"Subject: {msg['Subject']}")
+            print(msg.get_body(preferencelist=("plain",)).get_content())
+            log(f"Dry run: {len(alerts)} {label} alerts (not sent, not marked as seen)")
+            continue
+        try:
+            notify.send(msg, email_cfg)
+        except Exception as exc:
+            log(f"{label} e-mail FAILED, will retry next run: {exc}")
+            status = 1
+            continue
+        store.mark(alerts)  # only after a successful send, so nothing is lost
+        log(f"Sent {len(alerts)} {label} alerts")
+    return status
 
 
 if __name__ == "__main__":

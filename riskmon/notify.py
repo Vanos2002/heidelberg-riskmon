@@ -35,14 +35,27 @@ SEV_COLOR = {
 }
 
 
-def build_message(alerts: list[Alert], email_cfg: dict) -> EmailMessage:
+def is_public_safety(a: Alert) -> bool:
+    """NINA warnings and police reports: things that can affect you physically in Heidelberg."""
+    return not a.source.startswith("BSI")
+
+
+def build_message(alerts: list[Alert], email_cfg: dict, urgent: bool = False) -> EmailMessage:
     alerts = sorted(alerts, key=lambda a: severity_rank(a.severity), reverse=True)
     top = alerts[0].severity
     msg = EmailMessage()
-    msg["Subject"] = (
-        f"[Heidelberg Risk Monitor] {len(alerts)} new alert"
-        f"{'s' if len(alerts) != 1 else ''} (highest: {top})"
-    )
+    if urgent:
+        # Safety alerts: short, scannable subject naming the most important warning.
+        more = f" (+{len(alerts) - 1} more)" if len(alerts) > 1 else ""
+        msg["Subject"] = f"⚠️ Heidelberg {top.upper()}: {alerts[0].title}{more}"
+        if severity_rank(top) >= severity_rank("severe"):
+            msg["X-Priority"] = "1"
+            msg["Importance"] = "high"
+    else:
+        msg["Subject"] = (
+            f"[Heidelberg Risk Monitor] {len(alerts)} cyber-security advisor"
+            f"{'ies' if len(alerts) != 1 else 'y'} (highest: {top})"
+        )
     msg["From"] = email_cfg["from"]
     msg["To"] = email_cfg["to"]
 
